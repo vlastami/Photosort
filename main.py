@@ -1,55 +1,51 @@
-
 import argparse
 import sys
 import os.path
 from os import path
 from PIL import Image
 import shutil
-import datetime
 
 parser = argparse.ArgumentParser()
-
 
 parser.add_argument("input_dir")
 parser.add_argument("output_dir")
 
 args = parser.parse_args()
 
+input_dir = args.input_dir
+output_dir = args.output_dir
 
-if args.input_dir == None:
-    print("Chybí input_dir")
+if input_dir is None:
+    print("Missing input_dir")
     sys.exit()
 
-if args.output_dir == None:
-    print("Chybí output_dir")
+if output_dir is None:
+    print("Missing output_dir")
     sys.exit()
 
-if path.exists(args.input_dir) == False:
-    print("Složka input neexistuje")
+if not path.exists(input_dir):
+    print("No input_dir")
 
-if path.exists(args.output_dir) == False:
-    os.makedirs(args.output_dir, exist_ok=False)
+if not path.exists(output_dir):
+    os.makedirs(output_dir, exist_ok=False)
 
-
-for filename in os.listdir(args.input_dir):
-    absolute_path_input = os.path.join(args.input_dir,filename)
+for filename in os.listdir(input_dir):
+    absolute_path_input = os.path.join(input_dir, filename)
     sequence_unknown = 1
     new_filename_unknown = f"{sequence_unknown}.jpg"
     try:
         date_taken = Image.open(absolute_path_input)._getexif()[36867]
     except KeyError:
-        os.makedirs(os.path.join(args.output_dir, "unknown"), exist_ok=True)
-        absolute_path_output = os.path.join(args.output_dir, "unknown", new_filename_unknown)
+        os.makedirs(os.path.join(output_dir, "unknown"), exist_ok=True)
+        absolute_path_output = os.path.join(output_dir, "unknown", new_filename_unknown)
 
         while path.exists(absolute_path_output):
             sequence_unknown += 1
             new_filename_unknown = f"{sequence_unknown}.jpg"
-            absolute_path_output = os.path.join(args.output_dir, "unknown", new_filename_unknown)
+            absolute_path_output = os.path.join(output_dir, "unknown", new_filename_unknown)
 
-        shutil.copyfile(absolute_path_input, os.path.join(args.output_dir, "unknown", new_filename_unknown))
+        shutil.copyfile(absolute_path_input, os.path.join(output_dir, "unknown", new_filename_unknown))
         continue
-
-    print(date_taken)
 
     year = date_taken[0:4]
 
@@ -59,15 +55,12 @@ for filename in os.listdir(args.input_dir):
 
     new_filename = f"{year}-{month}-{day}-{sequence}.jpg"
 
-
-
-    absolute_path_output = os.path.join(args.output_dir,year, new_filename)
+    absolute_path_output = os.path.join(output_dir, year, new_filename)
 
     while path.exists(absolute_path_output):
         sequence += 1
         new_filename = f"{year}-{month}-{day}-{sequence}.jpg"
-        absolute_path_output = os.path.join(args.output_dir,year, new_filename)
+        absolute_path_output = os.path.join(output_dir, year, new_filename)
 
-    os.makedirs(os.path.join(args.output_dir,year), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, year), exist_ok=True)
     shutil.copyfile(absolute_path_input, absolute_path_output)
-
