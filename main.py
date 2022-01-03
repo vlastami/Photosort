@@ -36,11 +36,11 @@ output_dir = args.output_dir
 
 
 if not path.exists(input_dir):
-    print("No input_dir")
+    print("This path does not exist.")
 
 remove_files = False
 if args.x:
-    if input("Do you want to remove the original files after copying?").lower() == "y":
+    if input("Do you want to remove the original files after copying?").lower() == ("y" or "yes"):
         remove_files = True
 
 
