@@ -3,6 +3,12 @@ import os.path
 from os import path
 from PIL import Image
 import shutil
+import json
+import dash
+from dash import html
+import dash_leaflet as dl
+from dash.dependencies import Output, Input
+
 
 
 def create_sequence(sequence):
@@ -56,6 +62,11 @@ for file in os.listdir(input_dir):
         day = date_taken[8:10]
         new_filename = f"{year_dir}-{month}-{day}-"
 
+        location = Image.open(absolute_path_input)._getexif()[2]
+        print(location)
+
+
+
     except KeyError:
         year_dir = "unknown"
         new_filename = ""
@@ -67,25 +78,53 @@ for file in os.listdir(input_dir):
     if remove_files:
         os.remove(absolute_path_input)
 
-"""import gmaps
-gmaps.configure(api_key='AI...')
-nuclear_power_plants = [
-{'name': 'Atucha', 'location': (-34.0, -59.167), 'active_reactors': 1},
+
+
+"""locations = [
+{'name': 'Atucha', 'location': (-34.0, -59.167), },
 {'name': 'Embalse', 'location': (-32.2333, -64.4333), 'active_reactors': 1},
 {'name': 'Armenia', 'location': (40.167, 44.133), 'active_reactors': 1},
 {'name': 'Br', 'location': (51.217, 5.083), 'active_reactors': 1},
 {'name': 'Doel', 'location': (51.333, 4.25), 'active_reactors': 4},
 {'name': 'Tihange', 'location': (50.517, 5.283), 'active_reactors': 3}
 ]
-plant_locations = [plant['location'] for plant in nuclear_power_plants]
-info_box_template = 
-<dl>
-<dt>Name</dt><dd>{name}</dd>
-<dt>Number reactors</dt><dd>{active_reactors}</dd>
-</dl>
+plant_locations = [plant['location'] for plant in nuclear_power_plants]"""
 
-plant_info = [info_box_template.format(**plant) for plant in nuclear_power_plants]
-marker_layer = gmaps.marker_layer(plant_locations, info_box_content=plant_info)
-fig = gmaps.figure()
-fig.add_layer(marker_layer)
-fig"""
+
+
+
+
+MAP_ID = "map"
+MARKER_GROUP_ID = "marker-group"
+COORDINATE_CLICK_ID = "coordinate-click-id"
+
+# Create app.
+app = dash.Dash(__name__)
+app.layout = html.Div([
+    dl.Map(style={'width': '1000px', 'height': '500px'},
+           center=[-17.782769, -50.924872],
+           zoom=3,
+           children=[
+               dl.TileLayer(url="http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"),
+               dl.LayerGroup(id=MARKER_GROUP_ID)
+           ], id=MAP_ID)])
+
+
+@app.callback(Output(MARKER_GROUP_ID, 'children'), [Input(MAP_ID, 'click_lat_lng')])
+
+def set_marker(x):
+    if not x:
+        return None
+    return dl.Marker(position=x, children=[dl.Tooltip('Test')])
+
+
+@app.callback(Output(COORDINATE_CLICK_ID, 'children'), [Input(MAP_ID, 'click_lat_lng')])
+def click_coord(e):
+    if not e:
+        return "-"
+    return json.dumps(e)
+
+
+if __name__ == '__main__':
+    app.run_server(debug=False, port=8150)
+
