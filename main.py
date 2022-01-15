@@ -2,10 +2,8 @@ import argparse
 import os.path
 import shutil
 from os import path
-
 from exif import Image
 
-import googlemaps
 
 def create_sequence(sequence):
     if sequence < 10:
@@ -78,8 +76,3 @@ for file in os.listdir(input_dir):
         os.remove(absolute_path_input)
 
     locations.append({file: coords})
-
-
-gmaps = googlemaps.Client(key='AIzaSyAblIce2P0k0X7ZrW7EjpsuI7I66hxxRm8')
-
-
