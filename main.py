@@ -1,15 +1,11 @@
 import argparse
 import os.path
-from os import path
-from PIL import Image
 import shutil
-import json
-import dash
-from dash import html
-import dash_leaflet as dl
-from dash.dependencies import Output, Input
+from os import path
+
 from exif import Image
 
+import googlemaps
 
 def create_sequence(sequence):
     if sequence < 10:
@@ -67,7 +63,6 @@ for file in os.listdir(input_dir):
         longitude = img.gps_longitude
         coords = f"{latitude}, {longitude}"
 
-
     except KeyError:
         year_dir = "unknown"
         new_filename = ""
@@ -84,5 +79,7 @@ for file in os.listdir(input_dir):
 
     locations.append({file: coords})
 
-print(locations)
+
+gmaps = googlemaps.Client(key='AIzaSyAblIce2P0k0X7ZrW7EjpsuI7I66hxxRm8')
+
 
