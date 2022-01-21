@@ -3,6 +3,7 @@ import os.path
 import shutil
 from os import path
 from exif import Image
+import app as a
 
 
 def create_sequence(sequence):
@@ -21,6 +22,7 @@ def copy_file(input_path, output_path):
         sequence += 1
         filename = f"{output_path}{create_sequence(sequence)}.jpg"
     shutil.copyfile(input_path, filename)
+    return f"{output_path[-11:]}{create_sequence(sequence)}"
 
 
 parser = argparse.ArgumentParser()
@@ -28,6 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("input_dir")
 parser.add_argument("output_dir")
 parser.add_argument("-x", action="store_true")
+parser.add_argument("-m", action="store_true")
 
 args = parser.parse_args()
 
@@ -42,8 +45,11 @@ if args.x:
     if input("Do you want to remove the original files after copying?").lower() == ("y" or "yes"):
         remove_files = True
 
+
 os.makedirs(output_dir, exist_ok=True)
-locations = []
+
+positions = {}
+
 for file in os.listdir(input_dir):
     absolute_path_input = os.path.join(input_dir, file)
 
@@ -57,22 +63,29 @@ for file in os.listdir(input_dir):
         day = date_taken[8:10]
         new_filename = f"{year_dir}-{month}-{day}-"
 
-        latitude = img.gps_latitude
-        longitude = img.gps_longitude
-        coords = f"{latitude}, {longitude}"
+        latitude = img.gps_latitude[0] + img.gps_latitude[1]/60 + img.gps_latitude[2]/3600
+        longitude = img.gps_longitude[0] + img.gps_longitude[1]/60 + img.gps_longitude[2]/3600
 
     except KeyError:
         year_dir = "unknown"
         new_filename = ""
+
     except AttributeError:
         latitude = None
         longitude = None
+        year_dir = "unknown"
+        new_filename = ""
 
     os.makedirs(os.path.join(output_dir, year_dir), exist_ok=True)
     absolute_path_output = os.path.join(output_dir, year_dir, new_filename)
 
-    copy_file(absolute_path_input, absolute_path_output)
+    filename = copy_file(absolute_path_input, absolute_path_output)
+
     if remove_files:
         os.remove(absolute_path_input)
 
-    locations.append({file: coords})
+    if latitude or longitude is not None:
+        positions[filename] = (latitude, longitude)
+
+if args.m:
+    a.open_map(positions)
