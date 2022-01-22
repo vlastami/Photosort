@@ -4,7 +4,7 @@ import shutil
 from os import path
 from exif import Image
 import app as a
-
+import re
 
 def create_sequence(sequence):
     if sequence < 10:
@@ -42,7 +42,7 @@ if not path.exists(input_dir):
 
 remove_files = False
 if args.x:
-    if input("Do you want to remove the original files after copying?").lower() == ("y" or "yes"):
+    if re.match("[yY](?:es)?|1", input("Do you want to remove the original files after copying?").lower()):
         remove_files = True
 
 
